@@ -2,6 +2,8 @@ import collections
 import argparse
 from datetime import datetime
 import uuid
+from pathlib import Path
+from PIL import Image
 
 import numpy as np
 import pandas as pd
@@ -72,10 +74,10 @@ def run(
             timings = {}
 
             # scan the scene
-            tsdf, pc, timings["integration"] = sim.acquire_tsdf(n=n, N=N, resolution=40)
+            tsdf, pc, timings["integration"], rgb_img = sim.acquire_tsdf(n=n, N=N, resolution=40, return_rgb=True)
             state = argparse.Namespace(tsdf=tsdf, pc=pc)
             if resolution != 40:
-                extra_tsdf, _, _ = sim.acquire_tsdf(n=n, N=N, resolution=resolution)
+                extra_tsdf, _, _, = sim.acquire_tsdf(n=n, N=N, resolution=resolution)
                 state.tsdf_process = extra_tsdf
 
             if pc.is_empty():
@@ -87,6 +89,8 @@ def run(
                 scene_mesh = get_scene_from_mesh_pose_list(mesh_pose_list)
                 grasps, scores, timings["planning"], visual_mesh = grasp_plan_fn(state, scene_mesh)
                 logger.log_mesh(scene_mesh, visual_mesh, f'round_{round_id:03d}_trial_{trial_id:03d}')
+                logger.log_grasp_affordance(visual_mesh, f'round_{round_id:03d}_trial_{trial_id:03d}')
+                logger.log_rgb_img(rgb_img, f'round_{round_id:03d}_trial_{trial_id:03d}')
             else:
                 grasps, scores, timings["planning"] = grasp_plan_fn(state)
             planning_times.append(timings["planning"])
@@ -141,6 +145,12 @@ class Logger(object):
         self.rounds_csv_path = self.logdir / "rounds.csv"
         self.grasps_csv_path = self.logdir / "grasps.csv"
         self._create_csv_files_if_needed()
+
+        self.grasps_dir = self.logdir / "grasps"
+        self.grasps_dir.mkdir(parents=True, exist_ok=True)
+
+        self.rgb_dir = self.logdir / "rgb_images"  # directory for rgb images
+        self.rgb_dir.mkdir(parents=True, exist_ok=True)
 
     def _create_csv_files_if_needed(self):
         if not self.rounds_csv_path.exists():
@@ -205,6 +215,15 @@ class Logger(object):
             timings["integration"],
             timings["planning"],
         )
+
+    def log_grasp_affordance(self, visual_mesh, entry_name):
+        visual_mesh.export(self.grasps_dir / (entry_name + '.obj'), file_type='obj')
+
+    def log_rgb_img(self, rgb_img, entry_name):
+        img_path = self.rgb_dir / (entry_name + '.png')
+        img = Image.fromarray(rgb_img)
+        img.save(str(img_path))
+
 
 
 class Data(object):
