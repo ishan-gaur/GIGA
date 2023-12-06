@@ -54,7 +54,7 @@ class VGNImplicit(object):
 
         qual_vol, rot_vol, width_vol = process(tsdf_process, qual_vol, rot_vol, width_vol, out_th=self.out_th)
         qual_vol = bound(qual_vol, voxel_size)
-        if self.visualize:
+        if self.visualize: # This is not like the colored scene, it is the mesh colored by the grasp densities
             colored_scene_mesh = visual.affordance_visual(qual_vol, rot_vol, scene_mesh, size, self.resolution, **aff_kwargs)
         grasps, scores = select(qual_vol.copy(), self.pos.view(self.resolution, self.resolution, self.resolution, 3).cpu(), rot_vol, width_vol, threshold=self.qual_th, force_detection=self.force_detection, max_filter_size=8 if self.visualize else 4)
         toc = time.time() - tic
@@ -80,7 +80,7 @@ class VGNImplicit(object):
             composed_scene = trimesh.Scene(colored_scene_mesh)
             for i, g_mesh in enumerate(grasp_mesh_list):
                 composed_scene.add_geometry(g_mesh, node_name=f'grasp_{i}')
-            return grasps, scores, toc, composed_scene
+            return grasps, scores, toc, composed_scene # the colored grasp regions come from here
         else:
             return grasps, scores, toc
 
