@@ -1,5 +1,6 @@
 from pathlib import Path
 import time
+import random
 
 import numpy as np
 import pybullet
@@ -110,7 +111,10 @@ class ClutterRemovalSim(object):
             xy = self.rng.uniform(1.0 / 3.0 * self.size, 2.0 / 3.0 * self.size, 2)
             pose = Transform(rotation, np.r_[xy, table_height + 0.2])
             scale = self.rng.uniform(0.8, 1.0)
-            self.world.load_urdf(urdf, pose, scale=self.global_scaling * scale)
+            new_obj = self.world.load_urdf(urdf, pose, scale=self.global_scaling * scale)
+            color = [random.uniform(0, 1) for _ in range(4)]
+            color[-1] = 1.0
+            self.world.set_body_color(new_obj, color)
             self.wait_for_objects_to_rest(timeout=1.0)
 
         # remove box
