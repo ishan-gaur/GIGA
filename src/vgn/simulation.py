@@ -147,15 +147,19 @@ class ClutterRemovalSim(object):
                 self.remove_and_wait()
             attempts += 1
 
-    def acquire_tsdf(self, n, N=None, resolution=40, return_rgb=False):
+    def acquire_tsdf(self, n, N=None, resolution=40, return_rgb=False, rgb_zoom=None):
         """Render synthetic depth images from n viewpoints and integrate into a TSDF.
 
         If N is None, the n viewpoints are equally distributed on circular trajectory.
 
         If N is given, the first n viewpoints on a circular trajectory consisting of N points are rendered.
         """
+        assert isinstance(rgb_zoom, int) or isinstance(rgb_zoom, float), "rgb_zoom must be an int or float"
         tsdf = TSDFVolume(self.size, resolution)
         high_res_tsdf = TSDFVolume(self.size, 120)
+
+        if not self.sideview and rgb_zoom is not None:
+            raise NotImplementedError("RGB Zoom is not implemented for n viewpoints")
 
         if self.sideview:
             origin = Transform(Rotation.identity(), np.r_[self.size / 2, self.size / 2, self.size / 3])
@@ -164,6 +168,8 @@ class ClutterRemovalSim(object):
             origin = Transform(Rotation.identity(), np.r_[self.size / 2, self.size / 2, 0])
             theta = np.pi / 6.0
         r = 2.0 * self.size
+        if rgb_zoom is not None:
+            r_zoom = r / rgb_zoom
 
         N = N if N else n
         if self.sideview:
@@ -172,11 +178,15 @@ class ClutterRemovalSim(object):
         else:
             phi_list = 2.0 * np.pi * np.arange(n) / N
         extrinsics = [camera_on_sphere(origin, r, theta, phi) for phi in phi_list]
+        if rgb_zoom is not None:
+            extrinsic_zoom = camera_on_sphere(origin, r_zoom, theta, phi_list[0])
 
         timing = 0.0
         rgb_img = None
         for extrinsic in extrinsics:
             rgb_img, depth_img = self.camera.render(extrinsic)
+            if rgb_zoom is not None:
+                rgb_img, _ = self.camera.render(extrinsic_zoom)
 
             # add noise
             depth_img = apply_noise(depth_img, self.add_noise)

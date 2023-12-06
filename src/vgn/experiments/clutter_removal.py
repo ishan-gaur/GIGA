@@ -74,7 +74,7 @@ def run(
             timings = {}
 
             # scan the scene
-            tsdf, pc, timings["integration"], rgb_img = sim.acquire_tsdf(n=n, N=N, resolution=40, return_rgb=True)
+            tsdf, pc, timings["integration"], rgb_img = sim.acquire_tsdf(n=n, N=N, resolution=40, return_rgb=True, rgb_zoom=2)
             state = argparse.Namespace(tsdf=tsdf, pc=pc)
             if resolution != 40:
                 extra_tsdf, _, _, = sim.acquire_tsdf(n=n, N=N, resolution=resolution)
@@ -85,7 +85,7 @@ def run(
 
             # plan grasps
             if visualize:
-                mesh_pose_list = get_mesh_pose_list_from_world(sim.world, object_set)
+                mesh_pose_list = get_mesh_pose_list_from_world(sim.world, object_set, exclude_plane=False)
                 scene_mesh = get_scene_from_mesh_pose_list(mesh_pose_list)
                 grasps, scores, timings["planning"], visual_mesh = grasp_plan_fn(state, scene_mesh)
                 logger.log_mesh(scene_mesh, visual_mesh, f'round_{round_id:03d}_trial_{trial_id:03d}')
