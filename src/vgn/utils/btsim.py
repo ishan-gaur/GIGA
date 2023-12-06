@@ -53,10 +53,8 @@ class BtWorld(object):
         link_ids = [-1]
         if len(body.links) > 0:
             link_ids.extend(list(body.links.values()))
-        print(link_ids)
         for link_id in link_ids:
             pybullet.changeVisualShape(body.uid, link_id, rgbaColor=color)
-            print(body.uid, link_id, color)
 
     def remove_body(self, body):
         self.p.removeBody(body.uid)

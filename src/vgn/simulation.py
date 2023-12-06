@@ -70,7 +70,6 @@ class ClutterRemovalSim(object):
         self.place_table(table_height)
 
         if self.scene == "pile":
-            print("making a pile scene")
             self.generate_pile_scene(object_count, table_height)
         elif self.scene == "packed":
             self.generate_packed_scene(object_count, table_height)
