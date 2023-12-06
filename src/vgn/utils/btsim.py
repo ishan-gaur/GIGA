@@ -41,6 +41,23 @@ class BtWorld(object):
         self.bodies[body.uid] = body
         return body
 
+    def set_body_color(self, body, color):
+        # print(body)
+        # print(body.p)
+        # print(body.uid)
+        # print(body.scale)
+        # print(body.name)
+        # print(body.joints)
+        # print(body.links)
+        # print(body.p.getNumLinks(body.uid))
+        link_ids = [-1]
+        if len(body.links) > 0:
+            link_ids.extend(list(body.links.values()))
+        print(link_ids)
+        for link_id in link_ids:
+            pybullet.changeVisualShape(body.uid, link_id, rgbaColor=color)
+            print(body.uid, link_id, color)
+
     def remove_body(self, body):
         self.p.removeBody(body.uid)
         del self.bodies[body.uid]

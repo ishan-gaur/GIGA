@@ -69,6 +69,7 @@ class ClutterRemovalSim(object):
         self.place_table(table_height)
 
         if self.scene == "pile":
+            print("making a pile scene")
             self.generate_pile_scene(object_count, table_height)
         elif self.scene == "packed":
             self.generate_packed_scene(object_count, table_height)
@@ -86,7 +87,8 @@ class ClutterRemovalSim(object):
     def place_table(self, height):
         urdf = self.urdf_root / "setup" / "plane.urdf"
         pose = Transform(Rotation.identity(), [0.15, 0.15, height])
-        self.world.load_urdf(urdf, pose, scale=0.6)
+        table = self.world.load_urdf(urdf, pose, scale=0.6)
+        self.world.set_body_color(table, [0.2, 0.2, 0.2, 1.0]) # gray table
 
         # define valid volume for sampling grasps
         lx, ux = 0.02, self.size - 0.02
