@@ -218,6 +218,12 @@ class Logger(object):
 
     def log_grasp_affordance(self, visual_mesh, entry_name):
         visual_mesh.export(self.grasps_dir / (entry_name + '.obj'), file_type='obj')
+        # load the mesh with trimesh and report the error if any
+        try:
+            import trimesh
+            mesh = trimesh.load_mesh(self.grasps_dir / (entry_name + '.obj'))
+        except Exception as e:
+            print(e)
 
     def log_rgb_img(self, rgb_img, entry_name):
         img_path = self.rgb_dir / (entry_name + '.png')
