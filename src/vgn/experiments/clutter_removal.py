@@ -74,7 +74,8 @@ def run(
             timings = {}
 
             # scan the scene
-            tsdf, pc, timings["integration"], rgb_img = sim.acquire_tsdf(n=n, N=N, resolution=40, return_rgb=True, rgb_zoom=2)
+            # tsdf, pc, timings["integration"], rgb_img = sim.acquire_tsdf(n=n, N=N, resolution=40, return_rgb=True, rgb_zoom=2)
+            tsdf, pc, timings["integration"] = sim.acquire_tsdf(n=n, N=N, resolution=40)
             state = argparse.Namespace(tsdf=tsdf, pc=pc)
             if resolution != 40:
                 extra_tsdf, _, _, = sim.acquire_tsdf(n=n, N=N, resolution=resolution)
@@ -90,7 +91,7 @@ def run(
                 grasps, scores, timings["planning"], visual_mesh = grasp_plan_fn(state, scene_mesh)
                 logger.log_mesh(scene_mesh, visual_mesh, f'round_{round_id:03d}_trial_{trial_id:03d}')
                 logger.log_grasp_affordance(visual_mesh, f'round_{round_id:03d}_trial_{trial_id:03d}')
-                logger.log_rgb_img(rgb_img, f'round_{round_id:03d}_trial_{trial_id:03d}')
+                # logger.log_rgb_img(rgb_img, f'round_{round_id:03d}_trial_{trial_id:03d}')
             else:
                 grasps, scores, timings["planning"] = grasp_plan_fn(state)
             planning_times.append(timings["planning"])
@@ -222,6 +223,7 @@ class Logger(object):
         try:
             import trimesh
             mesh = trimesh.load_mesh(self.grasps_dir / (entry_name + '.obj'))
+            print("SUCCESS!")
         except Exception as e:
             print(e)
 

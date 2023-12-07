@@ -21,8 +21,9 @@ def main(args):
 
     gsr = [] # grasp success rate
     dr = [] # declutter rate
-    seeds = list(range(0, args.seeds))
-    for seed in seeds:
+    # seeds = list(range(0, args.seeds))
+    # for seed in seeds:
+    for seed in args.seeds:
         set_random_seed(seed)
         success_rate, declutter_rate = clutter_removal.run(
             grasp_plan_fn=grasp_planner,
@@ -31,13 +32,13 @@ def main(args):
             scene=args.scene,
             object_set=args.object_set,
             num_objects=args.num_objects,
-            n=1,
+            n=args.num_view,
             num_rounds=args.num_rounds,
-            seed=0,
+            seed=seed,
             sim_gui=args.sim_gui,
             result_path=None,
-            add_noise='',
-            sideview=True,
+            add_noise=args.add_noise,
+            sideview=args.sideview,
             silence=args.silence,
             visualize=args.vis)
         gsr.append(success_rate)
@@ -75,10 +76,10 @@ if __name__ == "__main__":
                         default="pile")
     parser.add_argument("--object-set", type=str, default="pile/test")
     parser.add_argument("--num-objects", type=int, default=5)
-    # parser.add_argument("--num-view", type=int, default=1)
+    parser.add_argument("--num-view", type=int, default=1)
     parser.add_argument("--num-rounds", type=int, default=100)
-    # parser.add_argument("--seeds", type=int, nargs='+', default=[0, 1, 2, 3, 4])
-    parser.add_argument("--seeds", type=int, default=5)
+    parser.add_argument("--seeds", type=int, nargs='+', default=[0, 1, 2, 3, 4])
+    # parser.add_argument("--seeds", type=int, default=5)
     parser.add_argument("--sim-gui", action="store_true")
     parser.add_argument("--qual-th", type=float, default=0.9)
     parser.add_argument("--eval-geo",
@@ -95,14 +96,14 @@ if __name__ == "__main__":
         help=
         "When all grasps are under threshold, force the detector to select the best grasp"
     )
-    # parser.add_argument(
-    #     "--add-noise",
-    #     type=str,
-    #     default='',
-    #     help="Whether add noise to depth observation, trans | dex | norm | ''")
-    # parser.add_argument("--sideview",
-    #                     action="store_true",
-    #                     help="Whether to look from one side")
+    parser.add_argument(
+        "--add-noise",
+        type=str,
+        default='',
+        help="Whether add noise to depth observation, trans | dex | norm | ''")
+    parser.add_argument("--sideview",
+                        action="store_true",
+                        help="Whether to look from one side")
     parser.add_argument("--silence",
                         action="store_true",
                         help="Whether to disable tqdm bar")

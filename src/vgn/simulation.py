@@ -154,7 +154,7 @@ class ClutterRemovalSim(object):
 
         If N is given, the first n viewpoints on a circular trajectory consisting of N points are rendered.
         """
-        assert isinstance(rgb_zoom, int) or isinstance(rgb_zoom, float), "rgb_zoom must be an int or float"
+        assert rgb_zoom is None or isinstance(rgb_zoom, int) or isinstance(rgb_zoom, float), "rgb_zoom must None, int or float"
         tsdf = TSDFVolume(self.size, resolution)
         high_res_tsdf = TSDFVolume(self.size, 120)
 
@@ -182,11 +182,8 @@ class ClutterRemovalSim(object):
             extrinsic_zoom = camera_on_sphere(origin, r_zoom, theta, phi_list[0])
 
         timing = 0.0
-        rgb_img = None
         for extrinsic in extrinsics:
-            rgb_img, depth_img = self.camera.render(extrinsic)
-            if rgb_zoom is not None:
-                rgb_img, _ = self.camera.render(extrinsic_zoom)
+            _, depth_img = self.camera.render(extrinsic)
 
             # add noise
             depth_img = apply_noise(depth_img, self.add_noise)
@@ -199,8 +196,9 @@ class ClutterRemovalSim(object):
         pc = high_res_tsdf.get_cloud()
         pc = pc.crop(bounding_box)
 
-        if self.sideview and return_rgb:
-            return tsdf, pc, timing, rgb_img
+        if return_rgb:
+        #     rgb_img, _ = self.camera.render(extrinsic_zoom if rgb_zoom is not None else extrinsics[0])
+            return tsdf, pc, timing, None
         else:
             return tsdf, pc, timing
 
