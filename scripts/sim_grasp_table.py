@@ -93,11 +93,11 @@ if __name__ == "__main__":
         help=
         "When all grasps are under threshold, force the detector to select the best grasp"
     )
-    # parser.add_argument(
-    #     "--add-noise",
-    #     type=str,
-    #     default='',
-        # help="Whether add noise to depth observation, trans | dex | norm | ''")
+    parser.add_argument(
+        "--add-noise",
+        type=str,
+        default='',
+        help="Whether add noise to depth observation, trans | dex | norm | ''")
     parser.add_argument("--sideview",
                         action="store_true",
                         help="Whether to look from one side")
