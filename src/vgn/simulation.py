@@ -147,7 +147,7 @@ class ClutterRemovalSim(object):
                 self.remove_and_wait()
             attempts += 1
 
-    def acquire_tsdf(self, n, N=None, resolution=40, return_rgb=False, rgb_zoom=None):
+    def acquire_tsdf(self, n, N=None, resolution=40, return_rgb=False, zoom=None):
         """Render synthetic depth images from n viewpoints and integrate into a TSDF.
 
         If N is None, the n viewpoints are equally distributed on circular trajectory.
@@ -182,6 +182,13 @@ class ClutterRemovalSim(object):
             extrinsic_zoom = camera_on_sphere(origin, r_zoom, theta, phi_list[0])
 
         timing = 0.0
+        if return_rgb:
+            if zoom is None:
+                extrinsic = extrinsics[0]
+            else:
+                extrinsic = camera_on_sphere(origin, r / 2, theta, phi_list[0])
+            rgb_img, depth_img = self.camera.render(extrinsic)
+            
         for extrinsic in extrinsics:
             _, depth_img = self.camera.render(extrinsic)
 
@@ -197,8 +204,7 @@ class ClutterRemovalSim(object):
         pc = pc.crop(bounding_box)
 
         if return_rgb:
-        #     rgb_img, _ = self.camera.render(extrinsic_zoom if rgb_zoom is not None else extrinsics[0])
-            return tsdf, pc, timing, None
+            return tsdf, pc, timing, rgb_img
         else:
             return tsdf, pc, timing
 

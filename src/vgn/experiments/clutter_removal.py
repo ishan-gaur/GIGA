@@ -74,8 +74,7 @@ def run(
             timings = {}
 
             # scan the scene
-            # tsdf, pc, timings["integration"], rgb_img = sim.acquire_tsdf(n=n, N=N, resolution=40, return_rgb=True, rgb_zoom=2)
-            tsdf, pc, timings["integration"] = sim.acquire_tsdf(n=n, N=N, resolution=40)
+            tsdf, pc, timings["integration"], rgb_img = sim.acquire_tsdf(n=n, N=N, resolution=40, return_rgb=True, zoom=2)
             state = argparse.Namespace(tsdf=tsdf, pc=pc)
             if resolution != 40:
                 extra_tsdf, _, _, = sim.acquire_tsdf(n=n, N=N, resolution=resolution)
@@ -219,13 +218,12 @@ class Logger(object):
 
     def log_grasp_affordance(self, visual_mesh, entry_name):
         visual_mesh.export(self.grasps_dir / (entry_name + '.obj'), file_type='obj')
-        # load the mesh with trimesh and report the error if any
         try:
             import trimesh
-            mesh = trimesh.load_mesh(self.grasps_dir / (entry_name + '.obj'))
+            trimesh.load_mesh(str(self.grasps_dir / (entry_name + '.obj')))
             print("SUCCESS!")
         except Exception as e:
-            print(e)
+            print(f"Error loading mesh: {e}")
 
     def log_rgb_img(self, rgb_img, entry_name):
         img_path = self.rgb_dir / (entry_name + '.png')
