@@ -36,9 +36,11 @@ def run(
     result_path=None,
     add_noise=False,
     sideview=False,
+    view=None,
     resolution=40,
     silence=False,
-    visualize=False
+    visualize=False,
+    zoom=1
 ):
     """Run several rounds of simulated clutter removal experiments.
 
@@ -48,7 +50,10 @@ def run(
     """
     #sideview=False
     #n = 6
-    sim = ClutterRemovalSim(scene, object_set, gui=sim_gui, seed=seed, add_noise=add_noise, sideview=sideview)
+    if view is None:
+        sim = ClutterRemovalSim(scene, object_set, gui=sim_gui, seed=seed, add_noise=add_noise, sideview=sideview)
+    else:
+        sim = ClutterRemovalSim(scene, object_set, gui=sim_gui, seed=seed, add_noise=add_noise, view=view)
     logger = Logger(logdir, description)
     cnt = 0
     success = 0
@@ -74,7 +79,7 @@ def run(
             timings = {}
 
             # scan the scene
-            tsdf, pc, timings["integration"], rgb_img = sim.acquire_tsdf(n=n, N=N, resolution=40, return_rgb=True, zoom=2)
+            tsdf, pc, timings["integration"], rgb_img = sim.acquire_tsdf(n=n, N=N, resolution=40, return_rgb=True, zoom=zoom)
             state = argparse.Namespace(tsdf=tsdf, pc=pc)
             if resolution != 40:
                 extra_tsdf, _, _, = sim.acquire_tsdf(n=n, N=N, resolution=resolution)

@@ -1,6 +1,7 @@
 from pathlib import Path
 import time
 import random
+from warnings import warn
 
 import numpy as np
 import pybullet
@@ -13,7 +14,8 @@ from vgn.utils.misc import apply_noise, apply_translational_noise
 
 
 class ClutterRemovalSim(object):
-    def __init__(self, scene, object_set, gui=True, seed=None, add_noise=False, sideview=False, save_dir=None, save_freq=8):
+    views = ["sideview", "horizontal", "top"]
+    def __init__(self, scene, object_set, gui=True, seed=None, add_noise=False, sideview=False, view=None, save_dir=None, save_freq=8):
         assert scene in ["pile", "packed"]
 
         self.urdf_root = Path("data/urdfs")
@@ -30,8 +32,14 @@ class ClutterRemovalSim(object):
         }.get(object_set, 1.0)
         self.gui = gui
         self.add_noise = add_noise
-        self.sideview = sideview
-
+        if view is None:
+            self.view = "sideview" if sideview else "default"
+        else:
+            self.view = view
+            if not self.view in ClutterRemovalSim.views:
+                warn(f"View option {self.view} is not valid. Options are {ClutterRemovalSim.views}.\nContinuing with default")
+                self.view = "default"
+        print(f"USING VIEW {self.view}")
         self.rng = np.random.RandomState(seed) if seed else np.random
         self.world = btsim.BtWorld(self.gui, save_dir, save_freq)
         self.gripper = Gripper(self.world)
@@ -147,7 +155,7 @@ class ClutterRemovalSim(object):
                 self.remove_and_wait()
             attempts += 1
 
-    def acquire_tsdf(self, n, N=None, resolution=40, return_rgb=False, zoom=None):
+    def acquire_tsdf(self, n, N=None, resolution=40, return_rgb=False, zoom=1):
         """Render synthetic depth images from n viewpoints and integrate into a TSDF.
 
         If N is None, the n viewpoints are equally distributed on circular trajectory.
@@ -157,16 +165,22 @@ class ClutterRemovalSim(object):
         tsdf = TSDFVolume(self.size, resolution)
         high_res_tsdf = TSDFVolume(self.size, 120)
 
-        if self.sideview:
+        if self.view == "sideview":
             origin = Transform(Rotation.identity(), np.r_[self.size / 2, self.size / 2, self.size / 3])
             theta = np.pi / 3.0
+        elif self.view == "horizontal":
+            origin = Transform(Rotation.identity(), np.r_[self.size / 2, self.size / 2, self.size / 3])
+            theta = np.pi / 2.1 # just over 2 so that the plane of the table is still visible
+        elif self.view == "top":
+            origin = Transform(Rotation.identity(), np.r_[self.size / 2, self.size / 2, self.size / 3])
+            theta = 0.1
         else:
             origin = Transform(Rotation.identity(), np.r_[self.size / 2, self.size / 2, 0])
             theta = np.pi / 6.0
         r = 2.0 * self.size
 
         N = N if N else n
-        if self.sideview:
+        if self.view == "sideview":
             assert n == 1
             phi_list = [- np.pi / 2.0]
         else:
@@ -175,10 +189,7 @@ class ClutterRemovalSim(object):
 
         timing = 0.0
         if return_rgb:
-            if zoom is None:
-                extrinsic = extrinsics[0]
-            else:
-                extrinsic = camera_on_sphere(origin, r / 2, theta, phi_list[0])
+            extrinsic = camera_on_sphere(origin, r / zoom, theta, phi_list[0])
             rgb_img, depth_img = self.camera.render(extrinsic)
             
         for extrinsic in extrinsics:
