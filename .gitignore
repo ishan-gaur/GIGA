@@ -114,3 +114,5 @@ venv.bak/
 # custom
 .DS_Store
 /notebooks
+*.html
+trial_viz.ipynb
