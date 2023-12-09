@@ -74,6 +74,7 @@ def run(
         last_label = None
         trial_id = -1
 
+        print(sim.num_objects, consecutive_failures)
         while sim.num_objects > 0 and consecutive_failures < MAX_CONSECUTIVE_FAILURES:
             trial_id += 1
             timings = {}
@@ -86,6 +87,7 @@ def run(
                 state.tsdf_process = extra_tsdf
 
             if pc.is_empty():
+                print("PC EMPTY")
                 break  # empty point cloud, abort this round TODO this should not happen
 
             # plan grasps
@@ -102,6 +104,7 @@ def run(
             total_times.append(timings["planning"] + timings["integration"])
 
             if len(grasps) == 0:
+                print("NO DETECTIONS")
                 no_grasp += 1
                 break  # no detections found, abort this round
 
@@ -109,6 +112,7 @@ def run(
             grasp, score = grasps[0], scores[0]
             label, _ = sim.execute_grasp(grasp, allow_contact=True)
             cnt += 1
+            print("CNT", cnt)
             if label != Label.FAILURE:
                 success += 1
 
