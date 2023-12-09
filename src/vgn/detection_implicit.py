@@ -146,11 +146,11 @@ def process(
 def select(qual_vol, center_vol, rot_vol, width_vol, threshold=0.90, max_filter_size=4, force_detection=False):
     best_only = False
     qual_vol[qual_vol < LOW_TH] = 0.0
-    if force_detection and (qual_vol >= threshold).sum() == 0:
-        best_only = True
-    else:
-        # threshold on grasp quality
-        qual_vol[qual_vol < threshold] = 0.0
+    # if force_detection and (qual_vol >= threshold).sum() == 0:
+    #     best_only = True
+    # else:
+    #     # threshold on grasp quality
+    #     qual_vol[qual_vol < threshold] = 0.0
 
     # non maximum suppression
     max_vol = ndimage.maximum_filter(qual_vol, size=max_filter_size)
@@ -167,9 +167,9 @@ def select(qual_vol, center_vol, rot_vol, width_vol, threshold=0.90, max_filter_
     sorted_grasps = [grasps[i] for i in reversed(np.argsort(scores))]
     sorted_scores = [scores[i] for i in reversed(np.argsort(scores))]
 
-    if best_only and len(sorted_grasps) > 0:
-        sorted_grasps = [sorted_grasps[0]]
-        sorted_scores = [sorted_scores[0]]
+    # if best_only and len(sorted_grasps) > 0:
+    #     sorted_grasps = [sorted_grasps[0]]
+    #     sorted_scores = [sorted_scores[0]]
         
     return sorted_grasps, sorted_scores
 
